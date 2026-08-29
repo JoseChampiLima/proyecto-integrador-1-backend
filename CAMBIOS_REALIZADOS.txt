@@ -1,0 +1,23 @@
+CORRECCIONES PRINCIPALES
+========================
+1. Se corrigió el bucle JSON de EspacioDeportivo -> Horario/Mantenimiento/Reserva.
+2. Se corrigió Mantenimiento para usar LocalDate + LocalTime de forma consistente.
+3. Se agregó validación de mantenimiento al crear/actualizar reservas.
+4. Se agregó validación de horario de atención por día de la semana.
+5. Se impiden reservas solapadas.
+6. Se impiden reservas en fechas pasadas.
+7. Se valida horaInicio < horaFin.
+8. Se valida existencia y estado del usuario y espacio deportivo.
+9. El precio de la reserva se calcula automáticamente con precioHora y duración.
+10. PENDIENTE se asigna automáticamente a nuevas reservas.
+11. Se agregaron respuestas HTTP 400/404/409 más limpias.
+12. Se agregaron validaciones de duplicados para tipo de espacio, método de pago,
+    estado de reserva, correo, DNI y número de operación.
+13. Se validan pagos contra reserva y método de pago existentes.
+14. Se corrigió el driver MySQL a com.mysql.cj.jdbc.Driver.
+
+IMPORTANTE:
+- Mantenimiento.estado es String. Use PROGRAMADO, FINALIZADO o CANCELADO; no true/false.
+- Para crear reservas deben existir los estados PENDIENTE y CANCELADA.
+- Los días de Horario se guardan como LUNES, MARTES, MIERCOLES, JUEVES, VIERNES,
+  SABADO o DOMINGO.
