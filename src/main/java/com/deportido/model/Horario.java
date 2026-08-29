@@ -4,6 +4,8 @@ import lombok.*;
 
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "horario")
 @Getter
@@ -16,6 +18,7 @@ public class Horario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idHorario;
 
+	@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_espacio", nullable = false)
     private EspacioDeportivo espacio;

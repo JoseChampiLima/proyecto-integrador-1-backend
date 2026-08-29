@@ -4,6 +4,8 @@ import lombok.*;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "estado_reserva")
 @Getter
@@ -24,6 +26,7 @@ public class EstadoReserva {
 
 	    private Boolean estado = true;
 
+	    @JsonIgnore
 	    @OneToMany(mappedBy = "estadoReserva")
 	    private List<Reserva> reservas;
 

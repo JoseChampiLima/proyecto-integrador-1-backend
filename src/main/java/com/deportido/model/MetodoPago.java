@@ -4,6 +4,8 @@ import lombok.*;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "metodo_pago")
 @Getter
@@ -21,6 +23,7 @@ public class MetodoPago {
 
     private Boolean estado = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "metodoPago")
     private List<Pago> pagos;
 

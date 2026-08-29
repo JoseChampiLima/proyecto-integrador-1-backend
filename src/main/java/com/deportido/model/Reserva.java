@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "reserva")
 @Getter
@@ -49,6 +51,7 @@ public class Reserva {
 	    @Column(length = 250)
 	    private String observacion;
 
+	    @JsonIgnore
 	    @OneToMany(mappedBy = "reserva")
 	    private List<Pago> pagos;
 

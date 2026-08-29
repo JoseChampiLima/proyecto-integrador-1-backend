@@ -1,8 +1,9 @@
 package com.deportido.model;
-import jakarta.persistence.*;
+import jakarta.persistence.*; 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "mantenimiento")
@@ -21,10 +22,16 @@ public class Mantenimiento {
     private EspacioDeportivo espacio;
 
     @Column(nullable = false)
-    private LocalDateTime fechaInicio;
+    private LocalDate fechaInicio;
 
     @Column(nullable = false)
-    private LocalDateTime fechaFin;
+    private LocalDate fechaFin;
+
+    @Column(nullable = false)
+    private LocalTime horaInicio;
+
+    @Column(nullable = false)
+    private LocalTime horaFin;
 
     @Column(length = 250)
     private String motivo;
@@ -48,20 +55,36 @@ public class Mantenimiento {
 		this.espacio = espacio;
 	}
 
-	public LocalDateTime getFechaInicio() {
+	public LocalDate getFechaInicio() {
 		return fechaInicio;
 	}
 
-	public void setFechaInicio(LocalDateTime fechaInicio) {
+	public void setFechaInicio(LocalDate fechaInicio) {
 		this.fechaInicio = fechaInicio;
 	}
 
-	public LocalDateTime getFechaFin() {
+	public LocalDate getFechaFin() {
 		return fechaFin;
 	}
 
-	public void setFechaFin(LocalDateTime fechaFin) {
+	public void setFechaFin(LocalDate fechaFin) {
 		this.fechaFin = fechaFin;
+	}
+
+	public LocalTime getHoraInicio() {
+		return horaInicio;
+	}
+
+	public void setHoraInicio(LocalTime horaInicio) {
+		this.horaInicio = horaInicio;
+	}
+
+	public LocalTime getHoraFin() {
+		return horaFin;
+	}
+
+	public void setHoraFin(LocalTime horaFin) {
+		this.horaFin = horaFin;
 	}
 
 	public String getMotivo() {
@@ -79,6 +102,8 @@ public class Mantenimiento {
 	public void setEstado(String estado) {
 		this.estado = estado;
 	}
+
+	
     
     
 }
