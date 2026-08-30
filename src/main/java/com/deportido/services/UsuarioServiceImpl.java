@@ -10,16 +10,17 @@ import com.deportido.model.Rol;
 import com.deportido.model.Usuario;
 import com.deportido.repository.RolRepository;
 import com.deportido.repository.UsuarioRepository;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
-
+	private final PasswordEncoder passwordEncoder;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
-
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, RolRepository rolRepository) {
+    
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, RolRepository rolRepository,PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Usuario> listar() { return usuarioRepository.findAll(); }
@@ -42,6 +43,9 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuario.getDni() != null && usuarioRepository.existsByDni(usuario.getDni())) {
             throw new ConflictException("El DNI ya está registrado");
         }
+        usuario.setClave(
+        	    passwordEncoder.encode(usuario.getClave())
+        	);
         usuario.setRol(resolverRol(usuario));
         return usuarioRepository.save(usuario);
     }
