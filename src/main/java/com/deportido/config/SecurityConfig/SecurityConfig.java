@@ -11,9 +11,62 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.List;
+
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+
 @Configuration
 public class SecurityConfig {
 
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+
+	    CorsConfiguration configuration = new CorsConfiguration();
+
+	    // Permitir Angular local
+	    configuration.setAllowedOrigins(
+	        List.of("http://localhost:4200")
+	    );
+
+	    // Métodos permitidos
+	    configuration.setAllowedMethods(
+	        List.of(
+	            "GET",
+	            "POST",
+	            "PUT",
+	            "DELETE",
+	            "PATCH",
+	            "OPTIONS"
+	        )
+	    );
+
+	    // Headers permitidos
+	    configuration.setAllowedHeaders(
+	        List.of("*")
+	    );
+
+	    // Permitir Authorization: Bearer TOKEN
+	    configuration.setExposedHeaders(
+	        List.of("Authorization")
+	    );
+
+	    configuration.setAllowCredentials(true);
+
+	    UrlBasedCorsConfigurationSource source =
+	            new UrlBasedCorsConfigurationSource();
+
+	    source.registerCorsConfiguration(
+	        "/**",
+	        configuration
+	    );
+
+	    return source;
+	}
+	
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -52,7 +105,7 @@ public class SecurityConfig {
             throws Exception {
 
         http
-
+        	.cors(cors -> {})
             .csrf(csrf -> csrf.disable())
 
             .sessionManagement(session ->
