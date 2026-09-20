@@ -130,7 +130,15 @@ public class SecurityConfig {
                  "/api/usuarios"
              ).permitAll()
 
-
+             
+          // ==========================================
+          // MOSTRAR IMAGEN - FOTO DE TIPO DE ESPACIO
+          // ==========================================
+             .requestMatchers(
+            		    HttpMethod.GET,
+            		    "/uploads/**"
+            		).permitAll()
+             
              // ==========================================
              // USUARIO AUTENTICADO - VER SU PERFIL
              // ==========================================
