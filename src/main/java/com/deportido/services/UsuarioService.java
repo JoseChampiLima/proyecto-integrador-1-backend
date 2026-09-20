@@ -1,8 +1,9 @@
 package com.deportido.services;
-import java.util.List;
+import java.util.List; 
 import java.util.Optional;
 
 import com.deportido.model.Usuario;
+import com.deportivo.DTO.ActualizarPerfilRequest;
 
 public interface UsuarioService {
 	 List<Usuario> listar();
@@ -18,4 +19,6 @@ public interface UsuarioService {
 	    Usuario actualizar(Long id, Usuario usuario);
 
 	    void eliminar(Long id);
+	    
+	    Usuario actualizarPerfil(Long idUsuario,ActualizarPerfilRequest request);
 }

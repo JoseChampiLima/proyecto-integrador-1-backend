@@ -1,6 +1,7 @@
 package com.deportido.config.SecurityConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -121,10 +122,39 @@ public class SecurityConfig {
                     "/api/auth/**"
                 ).permitAll()
 
-                // REGISTRO DE USUARIO
-                .requestMatchers(
-                    "/api/usuarios/**"
-                ).permitAll()
+             // ==========================================
+             // REGISTRO DE USUARIO - PÚBLICO
+             // ==========================================
+             .requestMatchers(
+                 HttpMethod.POST,
+                 "/api/usuarios"
+             ).permitAll()
+
+
+             // ==========================================
+             // USUARIO AUTENTICADO - VER SU PERFIL
+             // ==========================================
+             .requestMatchers(
+                 HttpMethod.GET,
+                 "/api/usuarios/perfil"
+             ).authenticated()
+
+
+             // ==========================================
+             // USUARIO AUTENTICADO - MODIFICAR SU PERFIL
+             // ==========================================
+             .requestMatchers(
+                 HttpMethod.PUT,
+                 "/api/usuarios/perfil"
+             ).authenticated()
+
+
+             // ==========================================
+             // ADMINISTRACIÓN DE USUARIOS
+             // ==========================================
+             .requestMatchers(
+                 "/api/usuarios/**"
+             ).hasRole("ADMINISTRADOR")
 
                 // PÚBLICO
                 .requestMatchers(
