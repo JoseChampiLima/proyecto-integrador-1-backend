@@ -73,7 +73,9 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	        EspacioDeportivo existente = repository.findById(id)
 	                .orElseThrow(() ->
 	                        new RuntimeException(
-	                                "Espacio deportivo no encontrado"));
+	                                "Espacio deportivo no encontrado"
+	                        )
+	                );
 
 	        existente.setNombre(espacio.getNombre());
 	        existente.setDescripcion(espacio.getDescripcion());
@@ -82,7 +84,10 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	        existente.setEstado(espacio.getEstado());
 	        existente.setSede(espacio.getSede());
 	        existente.setTipoEspacio(espacio.getTipoEspacio());
-	        existente.setFoto(espacio.getFoto());
+
+	        // NO modificar la foto aquí.
+	        // La foto se gestiona desde subirFoto() y eliminarFoto().
+
 	        return repository.save(existente);
 	    }
 
