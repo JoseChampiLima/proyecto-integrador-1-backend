@@ -53,23 +53,46 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     public Usuario actualizar(Long id, Usuario usuario) {
+
         Usuario existente = usuarioRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+                .orElseThrow(() ->
+                    new NotFoundException("Usuario no encontrado")
+                );
 
-        usuarioRepository.findByCorreo(usuario.getCorreo()).ifPresent(otro -> {
-            if (!otro.getIdUsuario().equals(id)) {
-                throw new ConflictException("El correo ya está registrado por otro usuario");
-            }
-        });
+        // ==============================
+        // VALIDAR CORREO DUPLICADO
+        // ==============================
+        usuarioRepository.findByCorreo(usuario.getCorreo())
+                .ifPresent(otro -> {
 
+                    if (!otro.getIdUsuario().equals(id)) {
+                        throw new ConflictException(
+                            "El correo ya está registrado por otro usuario"
+                        );
+                    }
+                });
+
+
+        // ==============================
+        // VALIDAR DNI DUPLICADO
+        // ==============================
         if (usuario.getDni() != null) {
-            usuarioRepository.findByDni(usuario.getDni()).ifPresent(otro -> {
-                if (!otro.getIdUsuario().equals(id)) {
-                    throw new ConflictException("El DNI ya está registrado por otro usuario");
-                }
-            });
+
+            usuarioRepository.findByDni(usuario.getDni())
+                    .ifPresent(otro -> {
+
+                        if (!otro.getIdUsuario().equals(id)) {
+                            throw new ConflictException(
+                                "El DNI ya está registrado por otro usuario"
+                            );
+                        }
+                    });
         }
 
+
+        // ==============================
+        // ACTUALIZAR DATOS
+        // ==============================
         existente.setNombres(usuario.getNombres());
         existente.setApellidos(usuario.getApellidos());
         existente.setDni(usuario.getDni());
@@ -78,9 +101,25 @@ public class UsuarioServiceImpl implements UsuarioService {
         existente.setEstado(usuario.getEstado());
         existente.setRol(resolverRol(usuario));
 
-        if (usuario.getClave() != null && !usuario.getClave().isBlank()) {
-            existente.setClave(usuario.getClave());
+
+        // ==============================
+        // ACTUALIZAR CONTRASEÑA
+        // SOLO SI EL FRONT ENVÍA UNA NUEVA
+        // ==============================
+        if (usuario.getClave() != null &&
+            !usuario.getClave().trim().isEmpty()) {
+
+            if (usuario.getClave().length() < 6) {
+                throw new RuntimeException(
+                    "La contraseña debe tener al menos 6 caracteres"
+                );
+            }
+
+            existente.setClave(
+                passwordEncoder.encode(usuario.getClave())
+            );
         }
+
 
         return usuarioRepository.save(existente);
     }
