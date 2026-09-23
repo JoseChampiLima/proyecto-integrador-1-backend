@@ -50,9 +50,6 @@ public class Usuario {
 	    @OneToMany(mappedBy = "usuario")
 	    private List<Reserva> reservas;
 
-	    public Usuario() {
-	    }
-
 	    public Long getIdUsuario() {
 	        return idUsuario;
 	    }

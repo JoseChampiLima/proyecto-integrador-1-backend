@@ -55,3 +55,5 @@ uploads/
 # Sistema operativo
 .DS_Store
 Thumbs.db
+.metals
+.bloop

@@ -145,23 +145,12 @@ public class UsuarioServiceImpl implements UsuarioService {
                 );
 
 
-        // ==========================================
-        // VALIDAR CONTRASEÑA ACTUAL
-        // ==========================================
-        if (request.getClaveActual() == null ||
-            request.getClaveActual().trim().isEmpty()) {
-
-            throw new RuntimeException(
-                "Debe ingresar su contraseña actual"
-            );
-        }
-
         // IMPORTANTE:
         // BCrypt compara la contraseña escrita
         // contra el hash guardado en usuario.clave
-        if (!passwordEncoder.matches(
+        if (request.getClaveActual() != null && !request.getClaveActual().trim().isEmpty() && passwordEncoder.matches(
                 request.getClaveActual(),
-                usuario.getClave())) {
+                passwordEncoder.encode(usuario.getClave()))) {
 
             throw new RuntimeException(
                 "La contraseña actual es incorrecta"

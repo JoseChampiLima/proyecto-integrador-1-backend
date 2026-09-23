@@ -39,9 +39,6 @@ public class Sede {
 	    @OneToMany(mappedBy = "sede")
 	    private List<EspacioDeportivo> espacios;
 
-	    public Sede() {
-	    }
-
 	    public Long getIdSede() {
 	        return idSede;
 	    }
