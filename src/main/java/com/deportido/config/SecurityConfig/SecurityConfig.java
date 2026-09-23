@@ -153,7 +153,7 @@ public class SecurityConfig {
              // ==========================================
              .requestMatchers(
                  HttpMethod.PUT,
-                 "/api/usuarios/perfil"
+                 "/api/usuarios/*/perfil"
              ).authenticated()
 
 
