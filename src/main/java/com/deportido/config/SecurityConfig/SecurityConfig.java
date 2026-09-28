@@ -176,11 +176,42 @@ public class SecurityConfig {
 
                 // SOLO ADMIN
                 .requestMatchers(
-                    "/api/sedes/**",
                     "/api/mantenimientos/**",
                     "/api/roles/**"
                 ).hasRole("ADMINISTRADOR")
 
+                // SEDES
+             // ==========================================
+             // SEDES - CONSULTA PÚBLICA
+             // ==========================================
+             .requestMatchers(
+                 HttpMethod.GET,
+                 "/api/sedes/**"
+             ).permitAll()
+
+             // ==========================================
+             // SEDES - MODIFICACIÓN SOLO ADMIN
+             // ==========================================
+             .requestMatchers(
+                 HttpMethod.POST,
+                 "/api/sedes/**"
+             ).hasRole("ADMINISTRADOR")
+
+             .requestMatchers(
+                 HttpMethod.PUT,
+                 "/api/sedes/**"
+             ).hasRole("ADMINISTRADOR")
+
+             .requestMatchers(
+                 HttpMethod.PATCH,
+                 "/api/sedes/**"
+             ).hasRole("ADMINISTRADOR")
+
+             .requestMatchers(
+                 HttpMethod.DELETE,
+                 "/api/sedes/**"
+             ).hasRole("ADMINISTRADOR")
+                
                 // CLIENTE Y ADMIN
                 .requestMatchers(
                     "/api/reservas/**",
