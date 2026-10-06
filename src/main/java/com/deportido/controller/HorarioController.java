@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.deportido.model.Horario;
 import com.deportido.services.HorarioService;
+import com.deportivo.DTO.HorarioDTO;
 
 @RestController
 @RequestMapping("/api/horarios")
@@ -18,8 +19,20 @@ public class HorarioController {
 	    }
 
 	    @GetMapping
-	    public List<Horario> listar() {
-	        return horarioService.listar();
+	    public List<HorarioDTO> listar() {
+
+	        return horarioService.listar()
+	                .stream()
+	                .map(horario -> new HorarioDTO(
+	                        horario.getIdHorario(),
+	                        horario.getEspacio().getIdEspacio(),
+	                        horario.getEspacio().getNombre(),
+	                        horario.getDiaSemana(),
+	                        horario.getHoraInicio(),
+	                        horario.getHoraFin(),
+	                        horario.getEstado()
+	                ))
+	                .toList();
 	    }
 
 	    @GetMapping("/{id}")
