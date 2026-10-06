@@ -177,7 +177,8 @@ public class SecurityConfig {
                 // SOLO ADMIN
                 .requestMatchers(
                     "/api/mantenimientos/**",
-                    "/api/roles/**"
+                    "/api/roles/**",
+                    "/api/dashboard/**"
                 ).hasRole("ADMINISTRADOR")
 
                 // SEDES
