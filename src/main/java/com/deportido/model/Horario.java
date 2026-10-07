@@ -1,10 +1,10 @@
 package com.deportido.model;
-import jakarta.persistence.*;
+import jakarta.persistence.*; 
 import lombok.*;
 
 import java.time.LocalTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 @Entity
 @Table(name = "horario")
@@ -18,7 +18,6 @@ public class Horario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idHorario;
 
-	@JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_espacio", nullable = false)
     private EspacioDeportivo espacio;

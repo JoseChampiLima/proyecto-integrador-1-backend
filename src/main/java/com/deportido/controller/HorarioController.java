@@ -36,12 +36,27 @@ public class HorarioController {
 	    }
 
 	    @GetMapping("/{id}")
-	    public ResponseEntity<Horario> buscarPorId(
+	    public ResponseEntity<HorarioDTO> buscarPorId(
 	            @PathVariable Long id) {
 
-	        return horarioService.buscarPorId(id)
-	                .map(ResponseEntity::ok)
-	                .orElse(ResponseEntity.notFound().build());
+	    	 Horario horario = horarioService.buscarPorId(id)
+	    	            .orElseThrow(() ->
+	    	                new RuntimeException(
+	    	                    "Horario no encontrado con ID: " + id
+	    	                )
+	    	            );
+
+	    	    HorarioDTO dto = new HorarioDTO(
+	    	            horario.getIdHorario(),
+	    	            horario.getEspacio().getIdEspacio(),
+	    	            horario.getEspacio().getNombre(),
+	    	            horario.getDiaSemana(),
+	    	            horario.getHoraInicio(),
+	    	            horario.getHoraFin(),
+	    	            horario.getEstado()
+	    	    );
+
+	    	    return ResponseEntity.ok(dto);
 	    }
 
 	    @GetMapping("/espacio/{idEspacio}")
