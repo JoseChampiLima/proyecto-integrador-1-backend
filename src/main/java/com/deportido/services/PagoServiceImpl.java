@@ -1,6 +1,6 @@
 package com.deportido.services;
 
-import java.math.BigDecimal;
+import java.math.BigDecimal; 
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -13,6 +13,10 @@ import com.deportido.model.Reserva;
 import com.deportido.repository.MetodoPagoRepository;
 import com.deportido.repository.PagoRepository;
 import com.deportido.repository.ReservaRepository;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PagoServiceImpl implements PagoService {
@@ -78,9 +82,30 @@ public class PagoServiceImpl implements PagoService {
         }
     }
 
+    @Override
+    @Transactional
     public Pago guardar(Pago pago) {
+
+        // Validar los datos recibidos
         validar(pago, null);
-        return repository.save(pago);
+
+        // Establecer la fecha desde el servidor
+        pago.setFechaPago(LocalDateTime.now());
+
+        // El número de operación no se recibe del cliente
+        pago.setNroOperacion(null);
+
+        // Guardar para obtener el ID autogenerado
+        Pago pagoGuardado = repository.saveAndFlush(pago);
+
+        // Generar el número de operación
+        String numeroOperacion = generarNumeroOperacion(pagoGuardado);
+
+        // Asignar el número generado
+        pagoGuardado.setNroOperacion(numeroOperacion);
+
+        // Guardar el número de operación
+        return repository.save(pagoGuardado);
     }
 
     public Pago actualizar(Long id, Pago pago) {
@@ -101,5 +126,35 @@ public class PagoServiceImpl implements PagoService {
     public void eliminar(Long id) {
         if (!repository.existsById(id)) throw new NotFoundException("Pago no encontrado");
         repository.deleteById(id);
+    }
+    
+    private String generarNumeroOperacion(Pago pago) {
+
+        String nombreMetodo = pago.getMetodoPago()
+                                .getNombre()
+                                .trim()
+                                .toUpperCase(Locale.ROOT);
+
+        String prefijo;
+
+        if (nombreMetodo.contains("YAPE")) {
+            prefijo = "YAPE";
+        } else if (nombreMetodo.contains("PLIN")) {
+            prefijo = "PLIN";
+        } else if (nombreMetodo.contains("TRANSFERENCIA")) {
+            prefijo = "TRANS";
+        } else if (nombreMetodo.contains("TARJETA")) {
+            prefijo = "TAR";
+        } else {
+            prefijo = nombreMetodo.replaceAll("[^A-Z0-9]", "");
+            prefijo = prefijo.substring(0, Math.min(4, prefijo.length()));
+        }
+
+        String fecha = pago.getFechaPago()
+                .format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+        String idFormateado = String.format("%03d", pago.getIdPago());
+
+        return prefijo + "-" + fecha + "-" + idFormateado;
     }
 }
