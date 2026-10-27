@@ -1,5 +1,5 @@
 package com.deportido.services;
-
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -116,16 +116,28 @@ public class MantenimientoServiceImpl implements MantenimientoService {
 
     @Override
     public Mantenimiento guardar(Mantenimiento mantenimiento) {
+
         validar(mantenimiento);
+
+        if (!"CANCELADO".equalsIgnoreCase(mantenimiento.getEstado())) {
+            validarCruce(mantenimiento, null);
+        }
+
         return repository.save(mantenimiento);
     }
 
     @Override
     public Mantenimiento actualizar(Long id, Mantenimiento mantenimiento) {
+
         Mantenimiento existente = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Mantenimiento no encontrado"));
+                .orElseThrow(() ->
+                        new NotFoundException("Mantenimiento no encontrado"));
 
         validar(mantenimiento);
+
+        if (!"CANCELADO".equalsIgnoreCase(mantenimiento.getEstado())) {
+            validarCruce(mantenimiento, id);
+        }
 
         existente.setFechaInicio(mantenimiento.getFechaInicio());
         existente.setFechaFin(mantenimiento.getFechaFin());
@@ -144,5 +156,58 @@ public class MantenimientoServiceImpl implements MantenimientoService {
             throw new NotFoundException("Mantenimiento no encontrado");
         }
         repository.deleteById(id);
+    }
+    
+    private void validarCruce(Mantenimiento mantenimiento, Long idExcluir) {
+
+        Long idEspacio = mantenimiento.getEspacio().getIdEspacio();
+
+        LocalDateTime nuevoInicio = LocalDateTime.of(
+                mantenimiento.getFechaInicio(),
+                mantenimiento.getHoraInicio()
+        );
+
+        LocalDateTime nuevoFin = LocalDateTime.of(
+                mantenimiento.getFechaFin(),
+                mantenimiento.getHoraFin()
+        );
+
+        List<Mantenimiento> existentes =
+                repository.findByEspacioIdEspacio(idEspacio);
+
+        for (Mantenimiento existente : existentes) {
+
+            // No comparar el registro consigo mismo al editar.
+            if (idExcluir != null &&
+                    idExcluir.equals(existente.getIdMantenimiento())) {
+                continue;
+            }
+
+            // Los mantenimientos cancelados no bloquean.
+            if ("CANCELADO".equalsIgnoreCase(existente.getEstado())) {
+                continue;
+            }
+
+            LocalDateTime inicioExistente = LocalDateTime.of(
+                    existente.getFechaInicio(),
+                    existente.getHoraInicio()
+            );
+
+            LocalDateTime finExistente = LocalDateTime.of(
+                    existente.getFechaFin(),
+                    existente.getHoraFin()
+            );
+
+            boolean hayCruce =
+                    nuevoInicio.isBefore(finExistente)
+                    && nuevoFin.isAfter(inicioExistente);
+
+            if (hayCruce) {
+                throw new BadRequestException(
+                    "Ya existe un mantenimiento para este espacio " +
+                    "que coincide con las fechas y horarios ingresados"
+                );
+            }
+        }
     }
 }

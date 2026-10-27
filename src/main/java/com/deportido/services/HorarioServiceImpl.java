@@ -60,6 +60,25 @@ public class HorarioServiceImpl implements HorarioService {
         if (!horario.getHoraFin().isAfter(horario.getHoraInicio())) {
             throw new BadRequestException("La hora final debe ser mayor a la hora inicial");
         }
+        
+        boolean duplicado = repository
+                .findByEspacioIdEspacioAndDiaSemana(
+                        horario.getEspacio().getIdEspacio(),
+                        dia
+                )
+                .stream()
+                .anyMatch(h ->
+                        !h.getIdHorario().equals(horario.getIdHorario())
+                        && h.getHoraInicio().equals(horario.getHoraInicio())
+                        && h.getHoraFin().equals(horario.getHoraFin())
+                );
+
+        if (duplicado) {
+            throw new BadRequestException(
+                "Ya existe un horario registrado con el mismo espacio, día y horas"
+            );
+        }
+        
 
         horario.setDiaSemana(dia);
         horario.setEspacio(espacio);
