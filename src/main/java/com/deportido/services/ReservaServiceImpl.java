@@ -88,7 +88,7 @@ public class ReservaServiceImpl implements ReservaService {
         EspacioDeportivo espacio = espacioRepository.findById(idEspacio)
                 .orElseThrow(() -> new NotFoundException("Espacio deportivo no encontrado"));
 
-        if (!"DISPONIBLE".equalsIgnoreCase(espacio.getEstado())) {
+        if (!"ACTIVO".equalsIgnoreCase(espacio.getEstado())) {
             return false;
         }
 
@@ -184,7 +184,7 @@ public class ReservaServiceImpl implements ReservaService {
         EspacioDeportivo espacio = espacioRepository.findById(reserva.getEspacio().getIdEspacio())
                 .orElseThrow(() -> new NotFoundException("Espacio deportivo no encontrado"));
 
-        if (!"DISPONIBLE".equalsIgnoreCase(espacio.getEstado())) {
+        if (!"ACTIVO".equalsIgnoreCase(espacio.getEstado())) {
             throw new ConflictException("El espacio deportivo no se encuentra disponible");
         }
 

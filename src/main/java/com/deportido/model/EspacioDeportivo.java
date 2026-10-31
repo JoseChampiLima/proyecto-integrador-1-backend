@@ -42,7 +42,7 @@ public class EspacioDeportivo {
 	    private BigDecimal precioHora;
 
 	    @Column(length = 20)
-	    private String estado = "DISPONIBLE";
+	    private String estado = "ACTIVO";
 
 	    @JsonIgnore
 	    @OneToMany(mappedBy = "espacio")

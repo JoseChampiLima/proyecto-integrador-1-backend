@@ -55,7 +55,7 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	        return repository
 	                .findBySedeIdSedeAndEstado(
 	                        idSede,
-	                        "DISPONIBLE");
+	                        "ACTIVO");
 	    }
 
 	    @Override
