@@ -18,4 +18,8 @@ public interface PagoService {
 	    Pago actualizar(Long id, Pago pago);
 
 	    void eliminar(Long id);
+	    
+
+	    List<Pago> listarPorUsuario(Long idUsuario);
+
 }

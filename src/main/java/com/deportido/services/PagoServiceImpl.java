@@ -157,4 +157,12 @@ public class PagoServiceImpl implements PagoService {
 
         return prefijo + "-" + fecha + "-" + idFormateado;
     }
+    
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<Pago> listarPorUsuario(Long idUsuario) {
+	    return repository.findByReservaUsuarioIdUsuario(idUsuario);
+	}
+
 }

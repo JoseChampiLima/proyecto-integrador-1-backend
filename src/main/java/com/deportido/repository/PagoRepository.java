@@ -26,4 +26,5 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     	        @Param("fechaDesde") LocalDateTime fechaDesde,
     	        @Param("fechaHasta") LocalDateTime fechaHasta
     	);
+    List<Pago> findByReservaUsuarioIdUsuario(Long idUsuario);
 }
