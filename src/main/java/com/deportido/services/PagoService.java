@@ -22,4 +22,7 @@ public interface PagoService {
 
 	    List<Pago> listarPorUsuario(Long idUsuario);
 
+		Pago confirmar(Long id);
+
+		Pago anular(Long id);
 }

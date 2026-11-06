@@ -1,15 +1,17 @@
 package com.deportido.services;
 
-import java.math.BigDecimal; 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import com.deportido.exception.BadRequestException;
 import com.deportido.exception.ConflictException;
 import com.deportido.exception.NotFoundException;
+import com.deportido.model.EstadoReserva;
 import com.deportido.model.MetodoPago;
 import com.deportido.model.Pago;
 import com.deportido.model.Reserva;
+import com.deportido.repository.EstadoReservaRepository;
 import com.deportido.repository.MetodoPagoRepository;
 import com.deportido.repository.PagoRepository;
 import com.deportido.repository.ReservaRepository;
@@ -24,20 +26,34 @@ public class PagoServiceImpl implements PagoService {
     private final PagoRepository repository;
     private final ReservaRepository reservaRepository;
     private final MetodoPagoRepository metodoPagoRepository;
+    private final EstadoReservaRepository estadoReservaRepository;
 
     public PagoServiceImpl(
             PagoRepository repository,
             ReservaRepository reservaRepository,
-            MetodoPagoRepository metodoPagoRepository) {
+            MetodoPagoRepository metodoPagoRepository,
+            EstadoReservaRepository estadoReservaRepository) {
         this.repository = repository;
         this.reservaRepository = reservaRepository;
         this.metodoPagoRepository = metodoPagoRepository;
+        this.estadoReservaRepository = estadoReservaRepository;
     }
 
-    public List<Pago> listar() { return repository.findAll(); }
-    public Optional<Pago> buscarPorId(Long id) { return repository.findById(id); }
-    public List<Pago> listarPorReserva(Long idReserva) { return repository.findByReservaIdReserva(idReserva); }
-    public Optional<Pago> buscarPorNumeroOperacion(String nroOperacion) { return repository.findByNroOperacion(nroOperacion); }
+    public List<Pago> listar() {
+        return repository.findAll();
+    }
+
+    public Optional<Pago> buscarPorId(Long id) {
+        return repository.findById(id);
+    }
+
+    public List<Pago> listarPorReserva(Long idReserva) {
+        return repository.findByReservaIdReserva(idReserva);
+    }
+
+    public Optional<Pago> buscarPorNumeroOperacion(String nroOperacion) {
+        return repository.findByNroOperacion(nroOperacion);
+    }
 
     private void validar(Pago pago, Long idActual) {
         if (pago.getReserva() == null || pago.getReserva().getIdReserva() == null) {
@@ -124,16 +140,17 @@ public class PagoServiceImpl implements PagoService {
     }
 
     public void eliminar(Long id) {
-        if (!repository.existsById(id)) throw new NotFoundException("Pago no encontrado");
+        if (!repository.existsById(id))
+            throw new NotFoundException("Pago no encontrado");
         repository.deleteById(id);
     }
-    
+
     private String generarNumeroOperacion(Pago pago) {
 
         String nombreMetodo = pago.getMetodoPago()
-                                .getNombre()
-                                .trim()
-                                .toUpperCase(Locale.ROOT);
+                .getNombre()
+                .trim()
+                .toUpperCase(Locale.ROOT);
 
         String prefijo;
 
@@ -157,12 +174,59 @@ public class PagoServiceImpl implements PagoService {
 
         return prefijo + "-" + fecha + "-" + idFormateado;
     }
-    
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<Pago> listarPorUsuario(Long idUsuario) {
-	    return repository.findByReservaUsuarioIdUsuario(idUsuario);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public List<Pago> listarPorUsuario(Long idUsuario) {
+        return repository.findByReservaUsuarioIdUsuario(idUsuario);
+    }
 
+    @Transactional
+    public Pago confirmar(Long id) {
+        Pago pago = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pago no encontrado"));
+
+        if (!"PENDIENTE".equals(pago.getEstado())) {
+            throw new IllegalStateException("Solo se puede confirmar un pago pendiente");
+        }
+
+        Reserva reserva = pago.getReserva();
+        // No se revive una reserva cancelada o finalizada
+        if (!"PENDIENTE".equals(reserva.getEstadoReserva().getNombre())) {
+            throw new IllegalStateException("La reserva no está pendiente");
+        }
+
+        pago.setEstado("APROBADO");
+        reserva.setEstadoReserva(estadoReserva("CONFIRMADA"));
+        reservaRepository.save(reserva);
+
+        return repository.save(pago);
+    }
+
+    @Transactional
+    public Pago anular(Long id) {
+        Pago pago = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pago no encontrado"));
+
+        boolean estabaPagado = "PAGADO".equals(pago.getEstado());
+        pago.setEstado("ANULADO");
+
+        // Si se anula el pago que sostenía la confirmación, la reserva vuelve a
+        // pendiente
+        if (estabaPagado) {
+            Reserva reserva = pago.getReserva();
+
+            if ("CONFIRMADA".equals(reserva.getEstadoReserva().getNombre())) {
+                reserva.setEstadoReserva(estadoReserva("PENDIENTE"));
+                reservaRepository.save(reserva);
+            }
+        }
+
+        return repository.save(pago);
+    }
+
+    private EstadoReserva estadoReserva(String nombre) {
+        return estadoReservaRepository.findByNombre(nombre)
+                .orElseThrow(() -> new NotFoundException("Estado de reserva no existe: " + nombre));
+    }
 }
