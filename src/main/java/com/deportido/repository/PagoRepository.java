@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PagoRepository extends JpaRepository<Pago, Long> {
+
+	List<Pago> findAllByOrderByFechaPagoDesc();
     List<Pago> findByReservaIdReserva(Long idReserva);
     Optional<Pago> findByNroOperacion(String nroOperacion);
     boolean existsByNroOperacion(String nroOperacion);

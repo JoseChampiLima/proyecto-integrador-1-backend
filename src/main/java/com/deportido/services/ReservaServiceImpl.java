@@ -63,7 +63,7 @@ public class ReservaServiceImpl implements ReservaService {
 
     @Override
     public List<Reserva> listarPorUsuario(Long idUsuario) {
-        return reservaRepository.findByUsuarioIdUsuario(idUsuario);
+        return reservaRepository.findByUsuarioIdUsuarioOrderByFechaRegistroDesc(idUsuario);
     }
 
     @Override

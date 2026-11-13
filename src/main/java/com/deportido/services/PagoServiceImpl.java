@@ -40,7 +40,7 @@ public class PagoServiceImpl implements PagoService {
     }
 
     public List<Pago> listar() {
-        return repository.findAll();
+        return repository.findAllByOrderByFechaPagoDesc();
     }
 
     public Optional<Pago> buscarPorId(Long id) {

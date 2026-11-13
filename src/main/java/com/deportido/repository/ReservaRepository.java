@@ -12,7 +12,7 @@ import com.deportido.model.Reserva;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
-    List<Reserva> findByUsuarioIdUsuario(Long idUsuario);
+    List<Reserva> findByUsuarioIdUsuarioOrderByFechaRegistroDesc(Long idUsuario);
     List<Reserva> findByEspacioIdEspacio(Long idEspacio);
     List<Reserva> findByFechaReserva(LocalDate fechaReserva);
     List<Reserva> findByEstadoReservaIdEstadoReserva(Long idEstadoReserva);
