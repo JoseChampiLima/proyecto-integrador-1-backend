@@ -195,6 +195,14 @@ public class PagoServiceImpl implements PagoService {
         if (!"PENDIENTE".equals(reserva.getEstadoReserva().getNombre())) {
             throw new IllegalStateException("La reserva no está pendiente");
         }
+        LocalDateTime fechaExpiracion =
+                reserva.getFechaRegistro().plusMinutes(10);
+
+        if (!LocalDateTime.now().isBefore(fechaExpiracion)) {
+            throw new IllegalStateException(
+                    "La reserva ha vencido. No se puede confirmar el pago."
+            );
+        }
 
         pago.setEstado("APROBADO");
         reserva.setEstadoReserva(estadoReserva("CONFIRMADA"));
