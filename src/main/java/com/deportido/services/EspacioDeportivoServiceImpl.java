@@ -6,7 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.deportido.model.EspacioDeportivo;
 import com.deportido.repository.EspacioDeportivoRepository;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
@@ -59,8 +60,28 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	    }
 
 	    @Override
-	    public EspacioDeportivo guardar(
-	            EspacioDeportivo espacio) {
+	    public EspacioDeportivo guardar(EspacioDeportivo espacio) {
+
+	        validarDatos(espacio);
+
+	        Long idSede = espacio.getSede().getIdSede();
+	        String nombre = espacio.getNombre().trim();
+
+	        boolean existe = repository
+	                .existsBySedeIdSedeAndNombreIgnoreCase(
+	                        idSede,
+	                        nombre
+	                );
+
+	        if (existe) {
+	            throw new ResponseStatusException(
+	                    HttpStatus.CONFLICT,
+	                    "Ya existe un espacio deportivo con ese nombre en la sede."
+	            );
+	        }
+
+	        espacio.setIdEspacio(null);
+	        espacio.setNombre(nombre);
 
 	        return repository.save(espacio);
 	    }
@@ -71,13 +92,31 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	            EspacioDeportivo espacio) {
 
 	        EspacioDeportivo existente = repository.findById(id)
-	                .orElseThrow(() ->
-	                        new RuntimeException(
-	                                "Espacio deportivo no encontrado"
-	                        )
+	                .orElseThrow(() -> new ResponseStatusException(
+	                        HttpStatus.NOT_FOUND,
+	                        "Espacio deportivo no encontrado"
+	                ));
+
+	        validarDatos(espacio);
+
+	        Long idSede = espacio.getSede().getIdSede();
+	        String nombre = espacio.getNombre().trim();
+
+	        boolean duplicado = repository
+	                .existsBySedeIdSedeAndNombreIgnoreCaseAndIdEspacioNot(
+	                        idSede,
+	                        nombre,
+	                        id
 	                );
 
-	        existente.setNombre(espacio.getNombre());
+	        if (duplicado) {
+	            throw new ResponseStatusException(
+	                    HttpStatus.CONFLICT,
+	                    "Ya existe otro espacio deportivo con ese nombre en la sede."
+	            );
+	        }
+
+	        existente.setNombre(nombre);
 	        existente.setDescripcion(espacio.getDescripcion());
 	        existente.setCapacidad(espacio.getCapacidad());
 	        existente.setPrecioHora(espacio.getPrecioHora());
@@ -85,14 +124,33 @@ public class EspacioDeportivoServiceImpl implements EspacioDeportivoService{
 	        existente.setSede(espacio.getSede());
 	        existente.setTipoEspacio(espacio.getTipoEspacio());
 
-	        // NO modificar la foto aquí.
-	        // La foto se gestiona desde subirFoto() y eliminarFoto().
-
 	        return repository.save(existente);
 	    }
+
 
 	    @Override
 	    public void eliminar(Long id) {
 	        repository.deleteById(id);
+	    }
+	    private void validarDatos(EspacioDeportivo espacio) {
+
+	        if (espacio == null
+	                || espacio.getNombre() == null
+	                || espacio.getNombre().trim().isEmpty()) {
+
+	            throw new ResponseStatusException(
+	                    HttpStatus.BAD_REQUEST,
+	                    "El nombre del espacio deportivo es obligatorio."
+	            );
+	        }
+
+	        if (espacio.getSede() == null
+	                || espacio.getSede().getIdSede() == null) {
+
+	            throw new ResponseStatusException(
+	                    HttpStatus.BAD_REQUEST,
+	                    "Debe seleccionar una sede."
+	            );
+	        }
 	    }
 }

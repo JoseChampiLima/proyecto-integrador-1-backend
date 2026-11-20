@@ -40,7 +40,7 @@ public class PagoServiceImpl implements PagoService {
     }
 
     public List<Pago> listar() {
-        return repository.findAll();
+        return repository.findAllByOrderByFechaPagoDesc();
     }
 
     public Optional<Pago> buscarPorId(Long id) {
@@ -194,6 +194,14 @@ public class PagoServiceImpl implements PagoService {
         // No se revive una reserva cancelada o finalizada
         if (!"PENDIENTE".equals(reserva.getEstadoReserva().getNombre())) {
             throw new IllegalStateException("La reserva no está pendiente");
+        }
+        LocalDateTime fechaExpiracion =
+                reserva.getFechaRegistro().plusMinutes(5);
+
+        if (!LocalDateTime.now().isBefore(fechaExpiracion)) {
+            throw new IllegalStateException(
+                    "La reserva ha vencido. No se puede confirmar el pago."
+            );
         }
 
         pago.setEstado("APROBADO");

@@ -1,7 +1,9 @@
+
 package com.deportido.services;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import com.deportido.exception.BadRequestException;
@@ -20,81 +22,158 @@ public class HorarioServiceImpl implements HorarioService {
     public HorarioServiceImpl(
             HorarioRepository repository,
             EspacioDeportivoRepository espacioRepository) {
+
         this.repository = repository;
         this.espacioRepository = espacioRepository;
     }
 
-    public List<Horario> listar() { return repository.findAll(); }
-    public Optional<Horario> buscarPorId(Long id) { return repository.findById(id); }
+    public List<Horario> listar() {
+        return repository.findAll();
+    }
+
+    public Optional<Horario> buscarPorId(Long id) {
+        return repository.findById(id);
+    }
+
     public List<Horario> listarPorEspacio(Long idEspacio) {
         return repository.findByEspacioIdEspacio(idEspacio);
     }
-    public List<Horario> listarPorEspacioYDia(Long idEspacio, String diaSemana) {
-        return repository.findByEspacioIdEspacioAndDiaSemana(idEspacio, diaSemana.toUpperCase());
+
+    public List<Horario> listarPorEspacioYDia(
+            Long idEspacio, String diaSemana) {
+
+        return repository.findByEspacioIdEspacioAndDiaSemana(
+                idEspacio, diaSemana.toUpperCase());
     }
 
     private void validar(Horario horario) {
-        if (horario.getEspacio() == null || horario.getEspacio().getIdEspacio() == null) {
-            throw new BadRequestException("Debe indicar el espacio deportivo");
+
+        // 1. Validar espacio deportivo
+        if (horario.getEspacio() == null ||
+            horario.getEspacio().getIdEspacio() == null) {
+
+            throw new BadRequestException(
+                "Debe indicar el espacio deportivo");
         }
 
-        EspacioDeportivo espacio = espacioRepository.findById(horario.getEspacio().getIdEspacio())
-                .orElseThrow(() -> new NotFoundException("Espacio deportivo no encontrado"));
+        EspacioDeportivo espacio = espacioRepository
+                .findById(horario.getEspacio().getIdEspacio())
+                .orElseThrow(() ->
+                    new NotFoundException(
+                        "Espacio deportivo no encontrado"));
 
-        if (horario.getDiaSemana() == null || horario.getDiaSemana().isBlank()) {
-            throw new BadRequestException("Debe indicar el día de la semana");
+        // 2. Validar día
+        if (horario.getDiaSemana() == null ||
+            horario.getDiaSemana().isBlank()) {
+
+            throw new BadRequestException(
+                "Debe indicar el día de la semana");
         }
 
-        String dia = horario.getDiaSemana().trim().toUpperCase()
-                .replace("Á", "A").replace("É", "E").replace("Í", "I")
-                .replace("Ó", "O").replace("Ú", "U");
+        String dia = horario.getDiaSemana()
+                .trim()
+                .toUpperCase()
+                .replace("Á", "A")
+                .replace("É", "E")
+                .replace("Í", "I")
+                .replace("Ó", "O")
+                .replace("Ú", "U");
 
-        if (!List.of("LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO","DOMINGO").contains(dia)) {
-            throw new BadRequestException("Día de la semana inválido");
+        if (!List.of(
+                "LUNES", "MARTES", "MIERCOLES",
+                "JUEVES", "VIERNES", "SABADO",
+                "DOMINGO"
+            ).contains(dia)) {
+
+            throw new BadRequestException(
+                "Día de la semana inválido");
         }
 
-        if (horario.getHoraInicio() == null || horario.getHoraFin() == null) {
-            throw new BadRequestException("Debe indicar hora de inicio y hora de fin");
+        // 3. Validar horas
+        if (horario.getHoraInicio() == null ||
+            horario.getHoraFin() == null) {
+
+            throw new BadRequestException(
+                "Debe indicar hora de inicio y hora de fin");
         }
 
-        if (!horario.getHoraFin().isAfter(horario.getHoraInicio())) {
-            throw new BadRequestException("La hora final debe ser mayor a la hora inicial");
+        if (!horario.getHoraFin()
+                .isAfter(horario.getHoraInicio())) {
+
+            throw new BadRequestException(
+                "La hora final debe ser mayor a la hora inicial");
         }
-        
-        boolean duplicado = repository
-                .findByEspacioIdEspacioAndDiaSemana(
-                        horario.getEspacio().getIdEspacio(),
-                        dia
-                )
+
+        // 4. Validar duplicados y superposición
+        Long idActual = horario.getIdHorario();
+
+        boolean existeConflicto = repository
+                .findByEspacioIdEspacio(
+                    espacio.getIdEspacio())
                 .stream()
+
+                // Excluir el registro actual
+                .filter(h ->
+                    idActual == null ||
+                    !idActual.equals(h.getIdHorario())
+                )
+
+                // Comparar el mismo día
+                .filter(h ->
+                    h.getDiaSemana() != null &&
+                    h.getDiaSemana().trim()
+                        .equalsIgnoreCase(dia)
+                )
+
+                // Detectar horas iguales o superpuestas
                 .anyMatch(h ->
-                        !h.getIdHorario().equals(horario.getIdHorario())
-                        && h.getHoraInicio().equals(horario.getHoraInicio())
-                        && h.getHoraFin().equals(horario.getHoraFin())
+                    h.getHoraInicio() != null &&
+                    h.getHoraFin() != null &&
+                    horario.getHoraInicio()
+                        .isBefore(h.getHoraFin()) &&
+                    horario.getHoraFin()
+                        .isAfter(h.getHoraInicio())
                 );
 
-        if (duplicado) {
+        if (existeConflicto) {
             throw new BadRequestException(
-                "Ya existe un horario registrado con el mismo espacio, día y horas"
+                "Ya existe otro horario registrado " +
+                "para esta cancha y día con horas " +
+                "iguales o superpuestas"
             );
         }
-        
 
+        // 5. Asignar datos normalizados
         horario.setDiaSemana(dia);
         horario.setEspacio(espacio);
     }
 
     public Horario guardar(Horario horario) {
+
+        // Un registro nuevo no debe excluir ningún ID
+        horario.setIdHorario(null);
+
         validar(horario);
+
         return repository.save(horario);
     }
 
     public Horario actualizar(Long id, Horario horario) {
-        Horario existente = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Horario no encontrado"));
 
+        // 1. Buscar el registro original
+        Horario existente = repository.findById(id)
+                .orElseThrow(() ->
+                    new NotFoundException(
+                        "Horario no encontrado"));
+
+        // 2. Asignar el ID que se está editando
+        // Esto permite modificar el mismo registro
+        horario.setIdHorario(id);
+
+        // 3. Validar contra los demás registros
         validar(horario);
 
+        // 4. Actualizar los datos
         existente.setDiaSemana(horario.getDiaSemana());
         existente.setHoraInicio(horario.getHoraInicio());
         existente.setHoraFin(horario.getHoraFin());
@@ -105,7 +184,12 @@ public class HorarioServiceImpl implements HorarioService {
     }
 
     public void eliminar(Long id) {
-        if (!repository.existsById(id)) throw new NotFoundException("Horario no encontrado");
+
+        if (!repository.existsById(id)) {
+            throw new NotFoundException(
+                "Horario no encontrado");
+        }
+
         repository.deleteById(id);
     }
 }

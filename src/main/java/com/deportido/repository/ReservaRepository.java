@@ -9,10 +9,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.deportido.model.Reserva;
-
+import java.time.LocalDateTime;
+import org.springframework.data.repository.query.Param;
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
-    List<Reserva> findByUsuarioIdUsuario(Long idUsuario);
+    List<Reserva> findByUsuarioIdUsuarioOrderByFechaRegistroDesc(Long idUsuario);
     List<Reserva> findByEspacioIdEspacio(Long idEspacio);
     List<Reserva> findByFechaReserva(LocalDate fechaReserva);
     List<Reserva> findByEstadoReservaIdEstadoReserva(Long idEstadoReserva);
@@ -98,4 +99,29 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     	        @Param("fechaDesde") LocalDate fechaDesde,
     	        @Param("fechaHasta") LocalDate fechaHasta
     	);
+    	@Query("""
+    		    SELECT r
+    		    FROM Reserva r
+    		    WHERE UPPER(r.estadoReserva.nombre) = 'PENDIENTE'
+    		      AND r.fechaRegistro <= :fechaLimite
+    		""")
+    		List<Reserva> buscarReservasPendientesVencidas(
+    		        @Param("fechaLimite") LocalDateTime fechaLimite
+    		);
+    	@Query("""
+    		    SELECT r
+    		    FROM Reserva r
+    		    WHERE UPPER(r.estadoReserva.nombre) = 'CONFIRMADA'
+    		      AND (
+    		          r.fechaReserva < :fechaActual
+    		          OR (
+    		              r.fechaReserva = :fechaActual
+    		              AND r.horaFin <= :horaActual
+    		          )
+    		      )
+    		""")
+    		List<Reserva> buscarReservasConfirmadasFinalizadas(
+    		        @Param("fechaActual") LocalDate fechaActual,
+    		        @Param("horaActual") LocalTime horaActual
+    		);
 }

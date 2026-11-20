@@ -42,48 +42,62 @@ public class MantenimientoServiceImpl implements MantenimientoService {
         return repository.findByEspacioIdEspacio(idEspacio);
     }
 
-    @Override
-    public boolean existeMantenimiento(
-            Long idEspacio,
-            LocalDate fecha,
-            LocalTime horaInicio,
-            LocalTime horaFin) {
 
-        List<Mantenimiento> mantenimientos =
-                repository.findByEspacioIdEspacioAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
-                        idEspacio, fecha, fecha);
+@Override
+public boolean existeMantenimiento(
+        Long idEspacio,
+        LocalDate fecha,
+        LocalTime horaInicio,
+        LocalTime horaFin) {
 
-        for (Mantenimiento m : mantenimientos) {
-            if ("CANCELADO".equalsIgnoreCase(m.getEstado())) {
-                continue;
-            }
+    List<Mantenimiento> mantenimientos =
+            repository.findByEspacioIdEspacioAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqual(
+                    idEspacio, fecha, fecha);
 
-            // Si la fecha está totalmente entre inicio y fin, se considera bloqueada.
-            if (fecha.isAfter(m.getFechaInicio()) && fecha.isBefore(m.getFechaFin())) {
-                return true;
-            }
+    for (Mantenimiento m : mantenimientos) {
 
-            // Mantenimiento de un solo día.
-            if (m.getFechaInicio().equals(m.getFechaFin())) {
-                if (horaInicio.isBefore(m.getHoraFin()) && horaFin.isAfter(m.getHoraInicio())) {
-                    return true;
-                }
-                continue;
-            }
+        // Solo los mantenimientos PROGRAMADOS o EN_CURSO
+        // deben bloquear las reservas.
+        String estado = m.getEstado();
 
-            // Primer día de un mantenimiento de varios días.
-            if (fecha.equals(m.getFechaInicio()) && horaFin.isAfter(m.getHoraInicio())) {
-                return true;
-            }
-
-            // Último día de un mantenimiento de varios días.
-            if (fecha.equals(m.getFechaFin()) && horaInicio.isBefore(m.getHoraFin())) {
-                return true;
-            }
+        if (!"PROGRAMADO".equalsIgnoreCase(estado) &&
+            !"EN_CURSO".equalsIgnoreCase(estado)) {
+            continue;
         }
 
-        return false;
+        // Fecha entre el inicio y el fin del mantenimiento
+        if (fecha.isAfter(m.getFechaInicio()) &&
+            fecha.isBefore(m.getFechaFin())) {
+            return true;
+        }
+
+        // Mantenimiento de un solo día
+        if (m.getFechaInicio().equals(m.getFechaFin())) {
+
+            if (horaInicio.isBefore(m.getHoraFin()) &&
+                horaFin.isAfter(m.getHoraInicio())) {
+                return true;
+            }
+
+            continue;
+        }
+
+        // Primer día de mantenimiento
+        if (fecha.equals(m.getFechaInicio()) &&
+            horaFin.isAfter(m.getHoraInicio())) {
+            return true;
+        }
+
+        // Último día de mantenimiento
+        if (fecha.equals(m.getFechaFin()) &&
+            horaInicio.isBefore(m.getHoraFin())) {
+            return true;
+        }
     }
+
+    return false;
+}
+
 
     private void validar(Mantenimiento mantenimiento) {
         if (mantenimiento.getEspacio() == null || mantenimiento.getEspacio().getIdEspacio() == null) {

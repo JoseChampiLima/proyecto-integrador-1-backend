@@ -1,4 +1,5 @@
 package com.deportido.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,130 +19,137 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @AllArgsConstructor
 @Builder
 public class Reserva {
-	 @Id
-	    @GeneratedValue(strategy = GenerationType.IDENTITY)
-	    private Long idReserva;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long idReserva;
 
-	    @ManyToOne
-	    @JoinColumn(name = "id_usuario", nullable = false)
-	    private Usuario usuario;
+	@ManyToOne
+	@JoinColumn(name = "id_usuario", nullable = false)
+	private Usuario usuario;
 
-	    @ManyToOne
-	    @JoinColumn(name = "id_espacio", nullable = false)
-	    private EspacioDeportivo espacio;
+	@ManyToOne
+	@JoinColumn(name = "id_espacio", nullable = false)
+	private EspacioDeportivo espacio;
 
-	    @ManyToOne
-	    @JoinColumn(name = "id_estado_reserva", nullable = false)
-	    private EstadoReserva estadoReserva;
+	@ManyToOne
+	@JoinColumn(name = "id_estado_reserva", nullable = false)
+	private EstadoReserva estadoReserva;
 
-	    @Column(nullable = false)
-	    private LocalDate fechaReserva;
+	@Column(nullable = false)
+	private LocalDate fechaReserva;
 
-	    @Column(nullable = false)
-	    private LocalTime horaInicio;
+	@Column(nullable = false)
+	private LocalTime horaInicio;
 
-	    @Column(nullable = false)
-	    private LocalTime horaFin;
+	@Column(nullable = false)
+	private LocalTime horaFin;
 
-	    @Column(nullable = false, precision = 10, scale = 2)
-	    private BigDecimal precioTotal;
+	@Column(nullable = false, precision = 10, scale = 2)
+	private BigDecimal precioTotal;
 
-	    private LocalDateTime fechaRegistro = LocalDateTime.now();
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime fechaRegistro;
 
-	    @Column(length = 250)
-	    private String observacion;
-
-	    @JsonIgnore
-	    @OneToMany(mappedBy = "reserva")
-	    private List<Pago> pagos;
-
-		public Long getIdReserva() {
-			return idReserva;
+	@PrePersist
+	void prePersist() {
+		if (this.fechaRegistro == null) {
+			this.fechaRegistro = LocalDateTime.now();
 		}
+	}
 
-		public void setIdReserva(Long idReserva) {
-			this.idReserva = idReserva;
-		}
+	@Column(length = 250)
+	private String observacion;
 
-		public Usuario getUsuario() {
-			return usuario;
-		}
+	@JsonIgnore
+	@OneToMany(mappedBy = "reserva")
+	private List<Pago> pagos;
 
-		public void setUsuario(Usuario usuario) {
-			this.usuario = usuario;
-		}
+	public Long getIdReserva() {
+		return idReserva;
+	}
 
-		public EspacioDeportivo getEspacio() {
-			return espacio;
-		}
+	public void setIdReserva(Long idReserva) {
+		this.idReserva = idReserva;
+	}
 
-		public void setEspacio(EspacioDeportivo espacio) {
-			this.espacio = espacio;
-		}
+	public Usuario getUsuario() {
+		return usuario;
+	}
 
-		public EstadoReserva getEstadoReserva() {
-			return estadoReserva;
-		}
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
 
-		public void setEstadoReserva(EstadoReserva estadoReserva) {
-			this.estadoReserva = estadoReserva;
-		}
+	public EspacioDeportivo getEspacio() {
+		return espacio;
+	}
 
-		public LocalDate getFechaReserva() {
-			return fechaReserva;
-		}
+	public void setEspacio(EspacioDeportivo espacio) {
+		this.espacio = espacio;
+	}
 
-		public void setFechaReserva(LocalDate fechaReserva) {
-			this.fechaReserva = fechaReserva;
-		}
+	public EstadoReserva getEstadoReserva() {
+		return estadoReserva;
+	}
 
-		public LocalTime getHoraInicio() {
-			return horaInicio;
-		}
+	public void setEstadoReserva(EstadoReserva estadoReserva) {
+		this.estadoReserva = estadoReserva;
+	}
 
-		public void setHoraInicio(LocalTime horaInicio) {
-			this.horaInicio = horaInicio;
-		}
+	public LocalDate getFechaReserva() {
+		return fechaReserva;
+	}
 
-		public LocalTime getHoraFin() {
-			return horaFin;
-		}
+	public void setFechaReserva(LocalDate fechaReserva) {
+		this.fechaReserva = fechaReserva;
+	}
 
-		public void setHoraFin(LocalTime horaFin) {
-			this.horaFin = horaFin;
-		}
+	public LocalTime getHoraInicio() {
+		return horaInicio;
+	}
 
-		public BigDecimal getPrecioTotal() {
-			return precioTotal;
-		}
+	public void setHoraInicio(LocalTime horaInicio) {
+		this.horaInicio = horaInicio;
+	}
 
-		public void setPrecioTotal(BigDecimal precioTotal) {
-			this.precioTotal = precioTotal;
-		}
+	public LocalTime getHoraFin() {
+		return horaFin;
+	}
 
-		public LocalDateTime getFechaRegistro() {
-			return fechaRegistro;
-		}
+	public void setHoraFin(LocalTime horaFin) {
+		this.horaFin = horaFin;
+	}
 
-		public void setFechaRegistro(LocalDateTime fechaRegistro) {
-			this.fechaRegistro = fechaRegistro;
-		}
+	public BigDecimal getPrecioTotal() {
+		return precioTotal;
+	}
 
-		public String getObservacion() {
-			return observacion;
-		}
+	public void setPrecioTotal(BigDecimal precioTotal) {
+		this.precioTotal = precioTotal;
+	}
 
-		public void setObservacion(String observacion) {
-			this.observacion = observacion;
-		}
+	public LocalDateTime getFechaRegistro() {
+		return fechaRegistro;
+	}
 
-		public List<Pago> getPagos() {
-			return pagos;
-		}
+	public void setFechaRegistro(LocalDateTime fechaRegistro) {
+		this.fechaRegistro = fechaRegistro;
+	}
 
-		public void setPagos(List<Pago> pagos) {
-			this.pagos = pagos;
-		}
-	    
-	    
+	public String getObservacion() {
+		return observacion;
+	}
+
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
+
+	public List<Pago> getPagos() {
+		return pagos;
+	}
+
+	public void setPagos(List<Pago> pagos) {
+		this.pagos = pagos;
+	}
+
 }

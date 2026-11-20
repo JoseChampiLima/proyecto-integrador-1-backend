@@ -18,5 +18,15 @@ public interface EspacioDeportivoRepository extends JpaRepository<EspacioDeporti
             Long idSede,
             String estado
     );
+    boolean existsBySedeIdSedeAndNombreIgnoreCase(
+            Long idSede,
+            String nombre
+    );
+
+    boolean existsBySedeIdSedeAndNombreIgnoreCaseAndIdEspacioNot(
+            Long idSede,
+            String nombre,
+            Long idEspacio
+    );
     
 }
