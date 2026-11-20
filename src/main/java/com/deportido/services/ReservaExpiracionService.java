@@ -1,4 +1,6 @@
+
 package com.deportido.services;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,46 +15,53 @@ import com.deportido.repository.ReservaRepository;
 
 @Service
 public class ReservaExpiracionService {
-	 private final ReservaRepository reservaRepository;
-	    private final EstadoReservaRepository estadoReservaRepository;
 
-	    public ReservaExpiracionService(
-	            ReservaRepository reservaRepository,
-	            EstadoReservaRepository estadoReservaRepository) {
+    private final ReservaRepository reservaRepository;
+    private final EstadoReservaRepository estadoReservaRepository;
 
-	        this.reservaRepository = reservaRepository;
-	        this.estadoReservaRepository = estadoReservaRepository;
-	    }
+    public ReservaExpiracionService(
+            ReservaRepository reservaRepository,
+            EstadoReservaRepository estadoReservaRepository) {
 
-	    @Scheduled(fixedDelay = 10000)
-	    @Transactional
-	    public void cancelarReservasVencidas() {
+        this.reservaRepository = reservaRepository;
+        this.estadoReservaRepository = estadoReservaRepository;
+    }
 
-	    	LocalDateTime fechaLimite =
-	    	        LocalDateTime.now().minusMinutes(5);
+    // Ejecutar cada 10 segundos
+    @Scheduled(fixedDelay = 10000)
+    @Transactional
+    public void cancelarReservasVencidas() {
 
-	        List<Reserva> reservas =
-	                reservaRepository.buscarReservasPendientesVencidas(
-	                        fechaLimite);
+        // Reservas pendientes con más de 5 minutos
+        LocalDateTime fechaLimite =
+                LocalDateTime.now().minusMinutes(5);
 
-	        if (reservas.isEmpty()) {
-	            return;
-	        }
+        // Buscar reservas pendientes vencidas
+        List<Reserva> reservas =
+                reservaRepository.buscarReservasPendientesVencidas(
+                        fechaLimite);
 
-	        EstadoReserva cancelada =
-	                estadoReservaRepository.findByNombre("CANCELADA")
-	                        .orElseThrow(() ->
-	                                new IllegalStateException(
-	                                        "No existe el estado CANCELADA"));
+        if (reservas.isEmpty()) {
+            return;
+        }
 
-	        for (Reserva reserva : reservas) {
-	            reserva.setEstadoReserva(cancelada);
-	        }
+        // Obtener estado CANCELADA
+        EstadoReserva cancelada =
+                estadoReservaRepository.findByNombre("CANCELADA")
+                        .orElseThrow(() ->
+                                new IllegalStateException(
+                                        "No existe el estado CANCELADA"));
 
-	        reservaRepository.saveAll(reservas);
+        // Cambiar estado de las reservas vencidas
+        for (Reserva reserva : reservas) {
+            reserva.setEstadoReserva(cancelada);
+        }
 
-	        System.out.println(
-	                "Reservas vencidas canceladas: " + reservas.size()
-	        );
-	    }
+        // Guardar cambios
+        reservaRepository.saveAll(reservas);
+
+        System.out.println(
+                "Reservas vencidas canceladas: " + reservas.size()
+        );
+    }
 }

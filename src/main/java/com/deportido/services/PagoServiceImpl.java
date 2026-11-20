@@ -196,7 +196,11 @@ public class PagoServiceImpl implements PagoService {
             throw new IllegalStateException("La reserva no está pendiente");
         }
         LocalDateTime fechaExpiracion =
+
                 reserva.getFechaRegistro().plusMinutes(5);
+
+                reserva.getFechaRegistro().plusMinutes(10);
+
 
         if (!LocalDateTime.now().isBefore(fechaExpiracion)) {
             throw new IllegalStateException(
